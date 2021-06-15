@@ -62,17 +62,31 @@ export default {
           "Content-Type": "application/json",
         },
       };
-      console.log(URL);
       fetch(URL, options)
         .then((response) => {
           this.loading = false;
-          return response.json();
+          if (!response.ok) {
+            throw new Error(response.status);
+          }
+          return response;
         })
+        .then((response) => response.json())
         .then((channel) => {
           this.channelName = channel.name;
           this.followerCount = channel.followers;
         })
-        .catch((error) => console.log(error));
+        .catch((error) => {
+          const messages = {
+            400: "Please enter a valid Twitch Channel",
+            404: "Could not find the Twitch Channel",
+            500: "Oops. Something wrong happening on our server",
+          };
+          if (messages[error.message]) {
+            this.error = messages[error.message];
+          } else {
+            this.error = "Oops. Something wrong happening on our server";
+          }
+        });
     },
   },
 };
