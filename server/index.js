@@ -23,6 +23,7 @@ const getToken = () => {
       AccessToken = response.data.access_token;
     },
     (error) => {
+      throw new Error("Access token not found");
       console.log(error);
     }
   );
@@ -36,10 +37,15 @@ const getID = (channelName) => {
     "Client-ID": process.env.CLIENT_ID,
   };
   const params = { login: channelName };
-  return axios.get(url, { params: params, headers: headers }).then(
+  return axios.get(url, { params: params, headers: headers });
+};
+
+/*
+.then(
     (response) => {
       if (response.data._total == 0) {
-        throw new Error("No name found");
+        //res.status(404).send("No name found");
+        throw new Error(404);
       }
       const id = response.data.users[0]._id;
       const name = response.data.users[0].display_name;
@@ -47,10 +53,10 @@ const getID = (channelName) => {
       return data;
     },
     (error) => {
-      throw new Error("Bad twitch username");
+      //res.status(400).send("Bad twitch username");
+      throw new Error(400);
     }
-  );
-};
+  );*/
 
 const getFollowers = (id) => {
   const url = process.env.GET_FOLLOWERS;
@@ -59,15 +65,18 @@ const getFollowers = (id) => {
     "Client-ID": process.env.CLIENT_ID,
   };
   const params = { to_id: id };
-  return axios.get(url, { params: params, headers: headers }).then(
+  return axios.get(url, { params: params, headers: headers });
+};
+/*
+.then(
     (response) => {
       return response.data.total;
     },
     (error) => {
-      throw new Error("Problem with finding followers");
+      //res.status(500).send("Problem with finding followers");
+      throw new Error(500);
     }
-  );
-};
+  );*/
 
 async function getChannel(req, res, next) {
   const { name } = req.params;
@@ -84,13 +93,17 @@ async function getChannel(req, res, next) {
           client.setex(user.id, 300, followers);
           res.send({ name: user.name, followers: followers });
         } catch (error) {
-          res.status(500).send(error);
+          res.status(400);
+          send(error.message);
+          next(error);
         }
         next();
       }
     });
   } catch (error) {
-    res.status(500).send(error.message);
+    res.status(400);
+    send(error.message);
+    next(error);
   }
 }
 

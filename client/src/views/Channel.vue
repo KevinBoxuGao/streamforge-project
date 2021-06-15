@@ -72,7 +72,7 @@ export default {
           this.channelName = channel.name;
           this.followerCount = channel.followers;
         })
-        .catch((error) => (this.error = error));
+        .catch((error) => console.log(error));
     },
   },
 };
